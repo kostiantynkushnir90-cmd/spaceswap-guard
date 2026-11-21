@@ -17,7 +17,7 @@ npm install
 npm test
 ```
 
-66 tests build **real version-0 Solana transactions** — a legitimate Jupiter-shaped swap plus staged
+71 tests build **real version-0 Solana transactions** — a legitimate Jupiter-shaped swap plus staged
 attacks — and assert exactly which checks fire:
 
 - a hidden `Approve` / `SetAuthority` / `ApproveChecked` anywhere in the transaction → hard block;
@@ -45,8 +45,8 @@ No wallet, no RPC endpoint, no SpaceSwap account, no network access needed.
 
 This package is a faithful port of the guard running in production today:
 
-- Backend build serving [spaceswap.pro](https://spaceswap.pro): image `spaceswap:latest` == `honest404-seo-20261120` (commit `0b84fdd0f3d6`), guard sources under `src/lib/guard/`, `src/lib/poststate-audit.ts`, `src/lib/presign-audit.ts` in the app repository.
-- Every program ID constant and numeric limit in this package is compared against those sources — same discriminators (4/6/13), same `KNOWN_PROGRAMS`, same 20 s quote window, 500/100 bps slippage bounds, 5-block hash margin, 0.01 SOL wallet-fee ceiling.
+- The backend serving [spaceswap.pro](https://spaceswap.pro) applies these same checks before it ever asks your wallet to sign. We deliberately do not publish deployment identifiers or internal source paths — this claim is checkable by behaviour, not by our build log.
+- Every program ID constant and numeric limit in this package is compared against the production guard — same discriminators (4/6/13), same `KNOWN_PROGRAMS`, same 20 s quote window, 500/100 bps slippage bounds, 5-block hash margin, 0.01 SOL wallet-fee ceiling.
 - The only intentional difference: user-facing `message` strings here are English, while production renders localized text. Production builds that text from each issue's `code` + structured `params` (see [`RULES.md`](RULES.md) §9), not by parsing this English string — so localization changes nothing about what is decided. Messages never affect a verdict: decisions depend solely on codes, levels, params and the logic you can read here.
 
 The honest next step after publication is collapsing the duplication: the backend imports this
