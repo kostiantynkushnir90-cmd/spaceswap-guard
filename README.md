@@ -1,4 +1,4 @@
-# @spaceswap/guard — Smart Shield, in the open
+# spaceswap-guard — Smart Shield, in the open
 
 > *"How will users independently verify these security checks before trusting SpaceSwap with their wallets?"*
 > This repository is our answer. It is the pre-sign security engine of [SpaceSwap](https://spaceswap.pro)
@@ -30,6 +30,10 @@ No wallet, no RPC endpoint, no SpaceSwap account, no network access needed.
 
 The remaining 6 tests pin the royalty arithmetic (10% of the integrator commission that lands on a
 partner's own referral accounts), which is what [`COMMERCIAL_TERMS.md`](COMMERCIAL_TERMS.md) bills.
+
+To run the guard in your own product instead of reading it: `npm install spaceswap-guard`. The
+published package ships compiled `dist/` plus types, and the same 77 tests pass straight out of
+`node_modules` (`node --test "dist/test/*.test.js"`).
 
 ## What is in here
 
