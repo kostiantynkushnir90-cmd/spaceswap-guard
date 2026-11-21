@@ -26,16 +26,37 @@ export const KNOWN_PROGRAMS = new Set<string>(
   ].map((value) => new PublicKey(value).toBase58()),
 );
 
+// Jupiter's swap API is a meta-aggregator: when it does not route a pair itself it hands the build to
+// another router program and names that router in `order.router`. The named program then legitimately
+// replaces the Jupiter aggregator at the top level of the transaction. Each address below was read off
+// a transaction Jupiter built under that router name (2026-11-21), not copied from documentation.
+// The resolution happens here on purpose: a consumer relays the router name Jupiter reported and
+// cannot silence UNKNOWN_PROGRAM by passing an arbitrary program address of its own.
+export const ROUTER_PROGRAMS = new Map<string, string>(
+  [
+    ["metis", "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"], // Jupiter's own router
+    ["okx", "proVF4pMXVaYqmy4NjniPh4pqKNfMmsihgd4wdkCX3u"], // OKX DEX router
+    ["dflow", "DF1ow4tspfHX9JwWJsAb9epbkA8hmpSEAtxXy1V27QBH"], // DFlow router
+    ["jupiterz", "61DFfeTKM7trxYcPQCM78bJ794ddZprZpAwAnLiwTpYH"], // Jupiter Z
+  ].map(([name, value]) => [name, new PublicKey(value).toBase58()] as const),
+);
+
 /**
  * Inspect the instructions of a swap transaction before the wallet is asked to sign.
  * A legitimate Jupiter swap for the curated tokens never delegates or re-signs token
  * authority, so any SetAuthority / Approve / ApproveChecked is treated as a hard block.
+ *
+ * `router` is the router name Jupiter reported for this exact transaction (`order.router`).
+ * The program it names counts as expected; every other outside program still raises
+ * UNKNOWN_PROGRAM. Omit it and the audit stays as strict as it was before routers existed.
  */
 export function inspectSwapTransaction(
   transaction: VersionedTransaction,
   accountKeysFromLookups?: { writable: PublicKey[]; readonly: PublicKey[] },
+  router?: string,
 ): GuardIssue[] {
   const message = transaction.message;
+  const declaredRouterProgram = router === undefined ? undefined : ROUTER_PROGRAMS.get(router);
 
   // Resolve the full key order manually (static, then lookup-writable, then lookup-readonly) instead
   // of message.getAccountKeys(), which throws whenever lookup tables are unresolved. Falling back to
@@ -90,7 +111,10 @@ export function inspectSwapTransaction(
       }
     }
 
-    if (!KNOWN_PROGRAMS.has(programBase58)) {
+    // Only the router Jupiter named for this build is expected. Any other outside program — including
+    // a different router from the catalog — still warns: a transaction that calls a router Jupiter did
+    // not report for it is exactly what the user should be shown.
+    if (!KNOWN_PROGRAMS.has(programBase58) && programBase58 !== declaredRouterProgram) {
       unknownPrograms.add(programBase58);
     }
   }

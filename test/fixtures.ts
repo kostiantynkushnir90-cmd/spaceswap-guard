@@ -175,6 +175,25 @@ export function buildLegitSwap(actors: Actors, opts: { extraInstructions?: Trans
   return compile(instructions, actors.taker);
 }
 
+// A swap Jupiter delegated to another router: identical shape, but the route instruction belongs to
+// the router program instead of the Jupiter aggregator, exactly as measured on mainnet.
+export function buildRouterSwap(
+  actors: Actors,
+  routerProgram: PublicKey,
+  extraInstructions: TransactionInstruction[] = [],
+): VersionedTransaction {
+  const route = jupiterRouteInstruction(actors);
+  return compile(
+    [
+      computeBudgetInstruction(),
+      createAtaInstruction(actors.taker, actors.ataOut, actors.taker, actors.mintOut),
+      { ...route, programId: routerProgram },
+      ...extraInstructions,
+    ],
+    actors.taker,
+  );
+}
+
 export function buildSwapWithApproveDrain(actors: Actors): VersionedTransaction {
   return buildLegitSwap(actors, {
     extraInstructions: [tokenApproveInstruction(actors.victimAta, actors.taker, actors.drainDelegate)],

@@ -48,12 +48,30 @@ A legitimate swap **never** grants authority over your tokens, so any of these i
 | `DRAIN_APPROVE` | block | Discriminator 4 (`Approve`) — delegates spending rights that outlive the swap |
 | `DRAIN_APPROVE_CHECKED` | block | Discriminator 13 (`ApproveChecked`) — a scoped delegation is still a delegation |
 | `TOKEN_2022_IN_TX` | warn | Transaction touches Token-2022 (extensions may exist; see §6) |
-| `UNKNOWN_PROGRAM` | warn | A program outside `KNOWN_PROGRAMS` is called — its logic cannot be verified here, so it is named in full for you to look up |
+| `UNKNOWN_PROGRAM` | warn | A program outside `KNOWN_PROGRAMS` is called and it is not the router Jupiter declared for this build — its logic cannot be verified here, so it is named in full for you to look up |
 | `UNRESOLVED_ACCOUNTS` | warn | Some lookup-table addresses could not be resolved locally |
 
 `KNOWN_PROGRAMS`: System, SPL Token, Token-2022, ATA, Compute Budget, Memo, Jupiter
 (`JUP6Lkb…`), Jupiter Referral. Unknown programs warn rather than block so that a new Jupiter
 routing program never silently disables trading — the decision is disclosed to you, not made for you.
+
+`ROUTER_PROGRAMS` — Jupiter's swap API is a meta-aggregator: when it does not route a pair itself it
+hands the build to another router and names it in the `router` field of the same response that carried
+the transaction. That program then replaces `JUP6Lkb…` at the top level, so the guard treats exactly
+the declared one as expected:
+
+| `router` | Program | Who it is |
+|---|---|---|
+| `metis` | `JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4` | Jupiter's own router |
+| `okx` | `proVF4pMXVaYqmy4NjniPh4pqKNfMmsihgd4wdkCX3u` | OKX DEX router |
+| `dflow` | `DF1ow4tspfHX9JwWJsAb9epbkA8hmpSEAtxXy1V27QBH` | DFlow router |
+| `jupiterz` | `61DFfeTKM7trxYcPQCM78bJ794ddZprZpAwAnLiwTpYH` | Jupiter Z |
+
+Two deliberate choices here. The caller passes the *name* Jupiter returned, never an address, so no
+integration can mark its own program trusted. And a router other than the declared one still warns:
+a transaction calling OKX while Jupiter reported `metis` is precisely the mismatch worth showing you.
+Every address above was read off a transaction Jupiter built under that name on mainnet (2026-11-21),
+and a router missing from this table still only warns — it never blocks your swap.
 
 ## 5. Pre-sign pipeline — `src/presign-audit.ts :: preparePreSignAudit`
 
@@ -128,7 +146,7 @@ assertions that lock this table.
 
 ## How to convince yourself
 
-`npm test` runs 77 tests, 71 of them building **real version-0 transactions** — a legitimate Jupiter-shaped
+`npm test` runs 82 tests, 75 of them building **real version-0 transactions** — a legitimate Jupiter-shaped
 swap and staged drains — and assert each rule fires (or stays silent) exactly as documented:
 top-level Approve/SetAuthority/ApproveChecked, CPI-reachable extra writable accounts, delegate
 changes found only by simulation, wallet re-signature tampering, stale quotes, consent-gated

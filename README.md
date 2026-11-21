@@ -17,7 +17,7 @@ npm install
 npm test
 ```
 
-`npm test` runs 77 tests. 71 of them build **real version-0 Solana transactions** — a legitimate
+`npm test` runs 82 tests. 75 of them build **real version-0 Solana transactions** — a legitimate
 Jupiter-shaped swap plus staged attacks — and assert exactly which checks fire:
 
 - a hidden `Approve` / `SetAuthority` / `ApproveChecked` anywhere in the transaction → hard block;
@@ -28,11 +28,12 @@ Jupiter-shaped swap plus staged attacks — and assert exactly which checks fire
 
 No wallet, no RPC endpoint, no SpaceSwap account, no network access needed.
 
-The remaining 6 tests pin the royalty arithmetic (10% of the integrator commission that lands on a
-partner's own referral accounts), which is what [`COMMERCIAL_TERMS.md`](COMMERCIAL_TERMS.md) bills.
+The remaining 7 tests pin the royalty arithmetic — 6 for the 10% of the integrator commission that
+lands on a partner's own referral accounts, which is what [`COMMERCIAL_TERMS.md`](COMMERCIAL_TERMS.md)
+bills — and 1 for the router catalog in §4 below.
 
 To run the guard in your own product instead of reading it: `npm install spaceswap-guard`. The
-published package ships compiled `dist/` plus types, and the same 77 tests pass straight out of
+published package ships compiled `dist/` plus types, and the same 82 tests pass straight out of
 `node_modules` (`node --test "dist/test/*.test.js"`).
 
 ## What is in here

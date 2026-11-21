@@ -3,14 +3,17 @@ import test, { describe } from "node:test";
 import { PublicKey } from "@solana/web3.js";
 import {
   TOKEN_2022_PROGRAM_ID,
+  JUPITER_PROGRAM,
   buildLegitSwap,
+  buildRouterSwap,
   buildSwapWithApproveCheckedDrain,
   buildSwapWithApproveDrain,
   buildSwapWithSetAuthorityDrain,
+  tokenApproveInstruction,
   compile,
   makeActors,
 } from "./fixtures";
-import { inspectSwapTransaction } from "../src/transaction";
+import { ROUTER_PROGRAMS, inspectSwapTransaction } from "../src/transaction";
 
 const actors = makeActors();
 const codes = (level: "block" | "warn", issues: { level: string; code: string }[]) =>
@@ -88,5 +91,47 @@ describe("inspectSwapTransaction — instruction decode", () => {
       actors.taker,
     );
     assert.deepEqual(codes("block", inspectSwapTransaction(padded)), ["DRAIN_APPROVE"]);
+  });
+});
+
+// Jupiter's swap API is a meta-aggregator: it names the router that built the transaction in
+// `order.router`, so the guard has to be able to tell "this program was declared" from "this program
+// appeared on its own". Measured addresses, mainnet, 2026-11-21.
+describe("inspectSwapTransaction — Jupiter routers", () => {
+  const OKX_ROUTER = new PublicKey("proVF4pMXVaYqmy4NjniPh4pqKNfMmsihgd4wdkCX3u");
+
+  test("the router Jupiter named for this build is expected, not disclosed as unknown", () => {
+    const issues = inspectSwapTransaction(buildRouterSwap(actors, OKX_ROUTER), undefined, "okx");
+    assert.deepEqual(codes("block", issues), []);
+    assert.deepEqual(codes("warn", issues), []);
+  });
+
+  test("the same transaction with no declared router still warns", () => {
+    const issues = inspectSwapTransaction(buildRouterSwap(actors, OKX_ROUTER));
+    assert.deepEqual(codes("warn", issues), ["UNKNOWN_PROGRAM"]);
+  });
+
+  test("a declared router that does not match the build does not silence the warning", () => {
+    for (const declared of ["metis", "dflow", "jupiterz", "jito", ""]) {
+      const issues = inspectSwapTransaction(buildRouterSwap(actors, OKX_ROUTER), undefined, declared);
+      assert.deepEqual(codes("warn", issues), ["UNKNOWN_PROGRAM"], `router=${declared || "(empty)"}`);
+    }
+  });
+  test("a declared router does not soften the drain rules", () => {
+    const swap = buildRouterSwap(actors, OKX_ROUTER, [
+      tokenApproveInstruction(actors.victimAta, actors.taker, actors.drainDelegate),
+    ]);
+    const issues = inspectSwapTransaction(swap, undefined, "okx");
+    assert.deepEqual(codes("block", issues), ["DRAIN_APPROVE"]);
+    assert.deepEqual(codes("warn", issues), []);
+  });
+
+  test("the router catalog is complete and every address is a real program id", () => {
+    assert.deepEqual([...ROUTER_PROGRAMS.keys()].sort(), ["dflow", "jupiterz", "metis", "okx"]);
+    for (const [name, address] of ROUTER_PROGRAMS) {
+      assert.equal(new PublicKey(address).toBase58(), address, name);
+    }
+    // metis is Jupiter's own router: its address is the aggregator KNOWN_PROGRAMS already lists.
+    assert.equal(ROUTER_PROGRAMS.get("metis"), JUPITER_PROGRAM.toBase58());
   });
 });

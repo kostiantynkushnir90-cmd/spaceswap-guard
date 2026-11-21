@@ -152,7 +152,9 @@ export async function preparePreSignAudit(
     ]);
   }
 
-  const txIssues = inspectSwapTransaction(transaction, resolved);
+  // The transaction and the router name come from the same Jupiter response, so the router it
+  // reported is what this build is expected to call.
+  const txIssues = inspectSwapTransaction(transaction, resolved, order.router);
   blockIf(txIssues);
 
   const minOut = auditMinOut(transaction, resolved, order);
