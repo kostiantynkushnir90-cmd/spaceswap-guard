@@ -32,6 +32,7 @@ export function validateSwapRequest(request: SwapRequest): GuardIssue[] {
       level: "block",
       code: "INVALID_SLIPPAGE",
       message: `Slippage must be an integer between 1 and ${MAX_SLIPPAGE_BPS} bps.`,
+      params: { max: String(MAX_SLIPPAGE_BPS) },
     });
   }
 

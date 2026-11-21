@@ -202,6 +202,7 @@ export async function preparePreSignAudit(
             `The transaction has write permission on your token account that is not part of this swap: ${unexpected.join(", ")}. ` +
             "The writable-account set is fixed at signing and bounds everything inner program calls (CPI) can reach, so a foreign program could delegate or rewrite authority on this account. " +
             "The signature is blocked before sending — this costs no network fee. Refresh the quote; if it repeats, check the transaction in an explorer and use another wallet.",
+          params: { accounts: unexpected.join(", ") },
         },
       ]);
     }

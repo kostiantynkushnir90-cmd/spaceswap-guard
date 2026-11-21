@@ -106,6 +106,8 @@ describe("preparePreSignAudit — the full pre-sign pipeline", () => {
         assert.ok(error instanceof SwapGuardError);
         assert.ok(error.issues.some((issue) => issue.code === "DRAIN_WRITABLE_ACCOUNT"));
         assert.match(error.message, new RegExp(actors.victimAta.toBase58()));
+        const drain = error.issues.find((issue) => issue.code === "DRAIN_WRITABLE_ACCOUNT");
+        assert.equal(drain?.params?.accounts, actors.victimAta.toBase58());
         return true;
       },
     );

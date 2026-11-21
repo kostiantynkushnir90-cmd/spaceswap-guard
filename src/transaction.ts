@@ -119,6 +119,7 @@ export function inspectSwapTransaction(
       level: "warn",
       code: "UNKNOWN_PROGRAM",
       message: `The transaction calls an unknown program ${program.slice(0, 8)}…. We cannot verify it.`,
+      params: { program },
     });
   }
 

@@ -224,6 +224,7 @@ export function mintRiskIssues(mint: string, risk: MintRisk): GuardIssue[] {
       code: "ISSUER_PERMANENT_DELEGATE",
       message:
         `Token ${mint} has a permanent delegate ${risk.permanentDelegate}: the issuer can move or burn your tokens at any time without your signature. Tokenized equities and other regulated tokens are built this way. The swap proceeds only after your explicit consent in the confirmation window.`,
+      params: { mint, delegate: risk.permanentDelegate },
     });
   }
   if (risk.transferHook) {
@@ -232,6 +233,7 @@ export function mintRiskIssues(mint: string, risk: MintRisk): GuardIssue[] {
       code: "ISSUER_TRANSFER_HOOK",
       message:
         `Token ${mint} calls the issuer's program (transfer hook) ${risk.transferHook} on every transfer. Its code cannot be verified; it acts only within the accounts of this transaction. The swap proceeds only after your explicit consent in the confirmation window.`,
+      params: { mint, hook: risk.transferHook },
     });
   }
   if (risk.freezeAuthority) {
@@ -239,6 +241,7 @@ export function mintRiskIssues(mint: string, risk: MintRisk): GuardIssue[] {
       level: "warn",
       code: "MINT_FREEZE_AUTHORITY",
       message: `Token ${mint} has a freeze authority ${risk.freezeAuthority}: its owner can freeze your token account and block selling.`,
+      params: { mint, authority: risk.freezeAuthority },
     });
   }
   if (risk.mintCloseAuthority) {
@@ -246,6 +249,7 @@ export function mintRiskIssues(mint: string, risk: MintRisk): GuardIssue[] {
       level: "warn",
       code: "MINT_CLOSE_AUTHORITY",
       message: `Token ${mint} has a close authority ${risk.mintCloseAuthority}: the mint can be closed, breaking transfers.`,
+      params: { mint, authority: risk.mintCloseAuthority },
     });
   }
   if (risk.transferFee) {
@@ -253,6 +257,7 @@ export function mintRiskIssues(mint: string, risk: MintRisk): GuardIssue[] {
       level: "warn",
       code: "MINT_TRANSFER_FEE",
       message: `Token ${mint} charges a fee on every transfer (transfer fee): you will receive less than the quote shows.`,
+      params: { mint },
     });
   }
   if (risk.nonTransferable) {
@@ -260,6 +265,7 @@ export function mintRiskIssues(mint: string, risk: MintRisk): GuardIssue[] {
       level: "warn",
       code: "MINT_NON_TRANSFERABLE",
       message: `Token ${mint} cannot be transferred (non-transferable): once bought, it cannot be sold.`,
+      params: { mint },
     });
   }
   if (risk.defaultFrozen) {
@@ -267,6 +273,7 @@ export function mintRiskIssues(mint: string, risk: MintRisk): GuardIssue[] {
       level: "warn",
       code: "MINT_DEFAULT_FROZEN",
       message: `New accounts of token ${mint} are created frozen: selling may be blocked.`,
+      params: { mint },
     });
   }
   if (risk.pausable) {
@@ -274,6 +281,7 @@ export function mintRiskIssues(mint: string, risk: MintRisk): GuardIssue[] {
       level: "warn",
       code: "MINT_PAUSABLE",
       message: `Transfers of token ${mint} can be paused (pausable): the owner can stop selling at any moment.`,
+      params: { mint },
     });
   }
   return issues;
@@ -359,6 +367,7 @@ export function postStateAuthorityIssues(accounts: PostStateAccount[]): GuardIss
         `Simulating the signed transaction showed the swap would change permanent authorities on your token accounts: ${changed.join("; ")}. ` +
         "A delegate, an ownership change or a close authority outlives the swap itself and is never reset inside it, so such an account could be emptied later. " +
         "The signature was refused before sending — this costs no network fee. Refresh the quote; if it repeats, check the transaction in an explorer and use another wallet.",
+      params: { accounts: changed.join("; ") },
     },
   ];
 }

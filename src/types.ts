@@ -3,7 +3,14 @@ import type { TokenAccountAudit } from "./presign";
 export type GuardIssue = {
   level: "block" | "warn";
   code: string;
+  // English fallback shown verbatim when a consumer has no localized wording for `code`.
   message: string;
+  // The structured facts behind this issue (mints, addresses, program ids, network error), keyed by
+  // the placeholder names a consumer's localized template uses: {mint}, {accounts}, {delegate},
+  // {hook}, {authority}, {program}, {programs}, {error}, {max}. The audited part is the decision —
+  // which code fires at which level and with which data — while prose is presentation, so any locale
+  // renders its own sentence from these params. Verdicts never depend on the message string.
+  params?: Record<string, string>;
 };
 
 export type SwapRequest = {

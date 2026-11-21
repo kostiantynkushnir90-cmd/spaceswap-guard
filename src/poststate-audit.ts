@@ -85,6 +85,7 @@ export async function auditPostStateAuthorities(
           "Most often the price moved beyond your slippage, or the wallet lacks funds for the amount and fees. " +
           "Raise the slippage, refresh the quote, or change the amount or pair. The signature is blocked before sending — this costs no network fee. " +
           "Network code: " + postState.executionError,
+        params: { error: String(postState.executionError) },
       },
     ];
   }

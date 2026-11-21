@@ -67,6 +67,7 @@ describe("auditPostStateAuthorities — pre-sign simulation diff", () => {
     assert.deepEqual(issues.map((i) => i.code), ["POST_STATE_AUTHORITY_CHANGED"]);
     assert.equal(issues[0].level, "block");
     assert.match(issues[0].message, new RegExp(ataIn.slice(0, 4)));
+    assert.equal(issues[0].params?.accounts, `${ataIn} (delegate)`);
   });
 
   test("no simulation answer degrades to an explicit warning, never a silent pass", async () => {
@@ -105,6 +106,7 @@ describe("auditPostStateAuthorities — pre-sign simulation diff", () => {
     assert.deepEqual(issues.map((i) => i.code), ["SIMULATION_EXECUTION_FAILED"]);
     assert.equal(issues[0].level, "block");
     assert.match(issues[0].message, /AccountNotFound/);
+    assert.equal(issues[0].params?.error, "AccountNotFound: program");
   });
 
   test("a truncated result map is 'incomplete' — warned, not asserted clean", async () => {

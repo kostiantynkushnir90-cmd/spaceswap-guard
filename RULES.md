@@ -105,9 +105,30 @@ honest wallet's re-encoding still passes):
 | `wallet-fees-only` | Wallet replaced Jupiter's compute budget with its own, under a hard ceiling of 0.01 SOL worst-case priority fee |
 | `modified` | Anything else — **never sent**. The refusal names the changed field, the added program in full, and the new accounts money could move to |
 
+## 9. Reading a verdict in your own words — `GuardIssue.params`
+
+Every issue carries `level`, `code`, an English `message` (a safe fallback) and, when the verdict
+embeds data the rule only knows at runtime, a locale-neutral `params` object. `code` + `params` are
+the contract a UI renders from; `message` is never parsed to make a decision and never changes a
+verdict. Placeholder names are fixed so a consumer's localized template can drop them straight in:
+
+| Code | `params` |
+|---|---|
+| `INVALID_SLIPPAGE` | `{ max }` |
+| `UNKNOWN_PROGRAM` | `{ program }` — full base58, the `message` truncates it |
+| `ISSUER_PERMANENT_DELEGATE` | `{ mint, delegate }` |
+| `ISSUER_TRANSFER_HOOK` | `{ mint, hook }` |
+| `MINT_FREEZE_AUTHORITY` / `MINT_CLOSE_AUTHORITY` | `{ mint, authority }` |
+| `MINT_TRANSFER_FEE` / `MINT_NON_TRANSFERABLE` / `MINT_DEFAULT_FROZEN` / `MINT_PAUSABLE` | `{ mint }` |
+| `POST_STATE_AUTHORITY_CHANGED` / `DRAIN_WRITABLE_ACCOUNT` | `{ accounts }` |
+| `SIMULATION_EXECUTION_FAILED` | `{ error }` |
+
+A purely static verdict (e.g. `SAME_TOKEN`) carries no `params`. See `test/params.test.ts` for the
+assertions that lock this table.
+
 ## How to convince yourself
 
-`npm test` runs 66 tests that build **real version-0 transactions** — a legitimate Jupiter-shaped
+`npm test` runs 71 tests that build **real version-0 transactions** — a legitimate Jupiter-shaped
 swap and staged drains — and assert each rule fires (or stays silent) exactly as documented:
 top-level Approve/SetAuthority/ApproveChecked, CPI-reachable extra writable accounts, delegate
 changes found only by simulation, wallet re-signature tampering, stale quotes, consent-gated
