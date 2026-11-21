@@ -17,8 +17,8 @@ npm install
 npm test
 ```
 
-71 tests build **real version-0 Solana transactions** — a legitimate Jupiter-shaped swap plus staged
-attacks — and assert exactly which checks fire:
+`npm test` runs 77 tests. 71 of them build **real version-0 Solana transactions** — a legitimate
+Jupiter-shaped swap plus staged attacks — and assert exactly which checks fire:
 
 - a hidden `Approve` / `SetAuthority` / `ApproveChecked` anywhere in the transaction → hard block;
 - a drain reachable only via CPI (extra writable account of yours) → hard block;
@@ -27,6 +27,9 @@ attacks — and assert exactly which checks fire:
 - the same tests proving legitimate swaps (multi-hop routes, ATA creation, wallet priority fees) pass.
 
 No wallet, no RPC endpoint, no SpaceSwap account, no network access needed.
+
+The remaining 6 tests pin the royalty arithmetic (10% of the integrator commission that lands on a
+partner's own referral accounts), which is what [`COMMERCIAL_TERMS.md`](COMMERCIAL_TERMS.md) bills.
 
 ## What is in here
 
@@ -38,8 +41,10 @@ No wallet, no RPC endpoint, no SpaceSwap account, no network access needed.
 | `src/poststate-audit.ts` | Pre-sign simulation orchestration over your route's accounts |
 | `src/presign-audit.ts` | The full pipeline that wires the above into one pre-sign decision |
 | `src/message-equality.ts` | Semantic before/after-signature comparison — what a wallet may still do, and what never ships |
+| `src/royalty.ts` | `ROYALTY_BPS` and `royaltyDue()` — the per-mint BigInt arithmetic behind the commercial terms |
 | [`RULES.md`](RULES.md) | Every issue code: trigger, level, implementing function |
 | [`THREAT_MODEL.md`](THREAT_MODEL.md) | What this protects against — and the six things it explicitly does **not** claim |
+| [`COMMERCIAL_TERMS.md`](COMMERCIAL_TERMS.md) | Running the guard in your own swap product: the 10%-of-commission royalty and how both sides measure it |
 
 ## Reviewed = deployed
 
@@ -68,3 +73,10 @@ on-chain and by anyone.
 ## License
 
 MIT — see [LICENSE](LICENSE). Use this code in your own products; attribution appreciated, audits welcome.
+
+## If you run a swap product
+
+The code license above is free and stays free. Separately, we will license Smart Shield as the
+pre-sign engine of your own front-end for **10% of the integrator commission your product
+actually collects** — measured on public chain data, auditable by you down to the signature. Terms,
+arithmetic and the honest limits of that agreement: [`COMMERCIAL_TERMS.md`](COMMERCIAL_TERMS.md).

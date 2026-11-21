@@ -8,4 +8,5 @@ export * from "./presign";
 export * from "./message-equality";
 export * from "./poststate-audit";
 export * from "./presign-audit";
+export * from "./royalty";
 export { base64ToBytes, bytesToBase64 } from "./base64";

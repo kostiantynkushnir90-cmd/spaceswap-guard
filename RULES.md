@@ -128,7 +128,7 @@ assertions that lock this table.
 
 ## How to convince yourself
 
-`npm test` runs 71 tests that build **real version-0 transactions** — a legitimate Jupiter-shaped
+`npm test` runs 77 tests, 71 of them building **real version-0 transactions** — a legitimate Jupiter-shaped
 swap and staged drains — and assert each rule fires (or stays silent) exactly as documented:
 top-level Approve/SetAuthority/ApproveChecked, CPI-reachable extra writable accounts, delegate
 changes found only by simulation, wallet re-signature tampering, stale quotes, consent-gated
