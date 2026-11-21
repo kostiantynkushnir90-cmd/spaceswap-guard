@@ -3,6 +3,14 @@
   "version": "1.0.0",
   "description": "SpaceSwap Smart Shield — the pre-sign security rules SpaceSwap runs on every swap, published for independent review with runnable tests.",
   "license": "MIT",
+  "author": "Kostiantyn Kushnir",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kostiantynkushnir90-cmd/spaceswap-guard.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
