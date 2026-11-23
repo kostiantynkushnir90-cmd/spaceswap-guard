@@ -9,6 +9,7 @@ import {
   mintRiskIssues,
   parseMintRisk,
   parseTokenAccount,
+  passThroughMintIssue,
   type ResolvedLookups,
 } from "./presign";
 import { auditPostStateAuthorities } from "./poststate-audit";
@@ -167,7 +168,8 @@ export async function preparePreSignAudit(
   // A multi-hop route writes to the user's ATA for every mint it touches, not just input/output.
   // Whitelist each route mint's ATA (plus wrapped SOL) so a legitimate intermediate hop is not blocked;
   // a writable user token account whose mint is NOT in the route stays a hard drain block.
-  const routeMints = [...new Set([...(order.routeMints ?? []), request.inputMint, request.outputMint])];
+  const tradedMints = [...new Set([request.inputMint, request.outputMint])];
+  const routeMints = [...new Set([...(order.routeMints ?? []), ...tradedMints])];
   const inputAtas = atasFor(request.inputMint);
   const outputAtas = atasFor(request.outputMint);
   const wsolAtas = atasFor(WSOL_MINT.toBase58());
@@ -211,8 +213,10 @@ export async function preparePreSignAudit(
   }
 
   // Token-2022 mint extensions are the airdrop-drain vector an instruction decode cannot see: a
-  // permanent delegate or a transfer hook moves funds at runtime, inside the writable bound. Read
-  // both mints and surface the issuer custody powers; the panel gates them behind explicit consent.
+  // permanent delegate or a transfer hook moves funds at runtime, inside the writable bound. Consent
+  // is about custody the user keeps, so it is demanded only for the mints he trades. A mint the route
+  // merely passes through is disclosed as a warning instead — gating on it would demand consent for a
+  // token the user never holds and cannot refuse separately from the pair he picked.
   const mintIssues: GuardIssue[] = [];
   if (accountsReadable) {
     for (const mint of routeMints) {
@@ -221,8 +225,16 @@ export async function preparePreSignAudit(
         continue;
       }
       const risk = parseMintRisk(info.data);
-      if (risk) {
+      if (!risk) {
+        continue;
+      }
+      if (tradedMints.includes(mint)) {
         mintIssues.push(...mintRiskIssues(mint, risk));
+      } else {
+        const passThrough = passThroughMintIssue(mint, risk);
+        if (passThrough) {
+          mintIssues.push(passThrough);
+        }
       }
     }
   }

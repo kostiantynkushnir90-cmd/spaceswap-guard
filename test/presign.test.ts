@@ -24,6 +24,7 @@ import {
   mintRiskIssues,
   parseMintRisk,
   parseTokenAccount,
+  passThroughMintIssue,
   postStateAuthorityIssues,
   associatedTokenAddress,
 } from "../src/presign";
@@ -148,6 +149,18 @@ describe("parseTokenAccount / parseMintRisk — reading raw chain state", () => 
     // Issuer custody powers are consent-gated warnings, and every message names the power plainly.
     assert.ok(issues.every((issue) => issue.level === "warn"));
     assert.match(issues[0].message, /without your signature/);
+  });
+
+  test("a pass-through hop names only the powers that act inside this transaction", () => {
+    const hop = actors.victimMint.toBase58();
+    const custody = parseMintRisk(encodeMint2022({ permanentDelegate: actors.drainDelegate }))!;
+    const issue = passThroughMintIssue(hop, custody);
+    assert.equal(issue?.level, "warn");
+    assert.equal(issue?.code, "ROUTE_PASSTHROUGH_ISSUER_POWERS");
+    assert.equal(issue?.params?.powers, "permanent delegate");
+    assert.match(issue?.message ?? "", /you do not keep it/);
+    // Freeze authority alone stops a later sale of a token the user does not hold — no line for it.
+    assert.equal(passThroughMintIssue(hop, parseMintRisk(encodeMintBase({ freezeAuthority: actors.drainDelegate }))!), null);
   });
 
   test("a classic SPL mint keeps freeze authority from the base layout", () => {

@@ -97,6 +97,19 @@ proofs of theft — regulated tokenized equities ship with them by design — so
 `MINT_CLOSE_AUTHORITY`, `MINT_TRANSFER_FEE`, `MINT_NON_TRANSFERABLE`, `MINT_DEFAULT_FROZEN`,
 `MINT_PAUSABLE` — all `warn`.
 
+Consent is about custody you keep, so these codes are raised only for the mints you actually trade —
+the pair you chose. A token the route merely passes through (wrapped and unwrapped inside one
+transaction, never yours at the end) is not yours to consent for, and gating on it would block a
+clean pair on a hop you did not pick. It is disclosed instead, and only with the powers that act
+inside this very transaction:
+
+| Code | Level | Trigger |
+|---|---|---|
+| `ROUTE_PASSTHROUGH_ISSUER_POWERS` | warn | An intermediate hop's mint carries a permanent delegate, a transfer hook or a transfer fee. Informational — the confirm button is not gated by it |
+
+Your own accounts stay protected regardless: the writable-account bound (`DRAIN_WRITABLE_ACCOUNT`) and
+the post-signature authority diff (`POST_STATE_AUTHORITY_CHANGED`) remain hard blocks.
+
 ## 7. Post-signature simulation — `src/poststate-audit.ts` + `src/presign.ts :: postStateAuthorityIssues`
 
 The exact bytes you are about to sign are simulated (`sigVerify: false`), and your token accounts'

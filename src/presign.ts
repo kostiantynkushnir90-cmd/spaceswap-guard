@@ -213,9 +213,10 @@ export function parseMintRisk(data: Uint8Array): MintRisk | null {
 
 // Permanent delegate and transfer hook are issuer custody powers, not a proof of theft: regulated
 // tokenized equities (xStocks, Backpack Securities) ship both by design, so a hard block would ban
-// the whole category. They stay loud warnings and the confirm panel gates the swap behind an explicit
-// consent checkbox. The user's OWN accounts remain protected by the writable bound, the instruction
-// decode and the post-state authority check, which stay hard blocks.
+// the whole category. For a mint the user actually trades they stay loud warnings and the confirm
+// panel gates the swap behind an explicit consent checkbox, because he keeps that token afterwards.
+// The user's OWN accounts remain protected by the writable bound, the instruction decode and the
+// post-state authority check, which stay hard blocks.
 export function mintRiskIssues(mint: string, risk: MintRisk): GuardIssue[] {
   const issues: GuardIssue[] = [];
   if (risk.permanentDelegate) {
@@ -285,6 +286,32 @@ export function mintRiskIssues(mint: string, risk: MintRisk): GuardIssue[] {
     });
   }
   return issues;
+}
+
+// A mint the route merely passes through is not a token the user keeps, so its issuer powers cannot
+// stand in for consent to the swap — that would gate a pair whose own endpoints are clean. They are
+// still disclosed, because a permanent delegate or a transfer hook acts inside this very transaction
+// and a transfer fee quietly reduces what lands. The user's OWN accounts stay protected by the
+// writable bound and the post-state authority check, which remain hard blocks.
+const PASSTHROUGH_POWERS: Array<[keyof MintRisk, string]> = [
+  ["permanentDelegate", "permanent delegate"],
+  ["transferHook", "transfer hook"],
+  ["transferFee", "transfer fee"],
+];
+
+export function passThroughMintIssue(mint: string, risk: MintRisk): GuardIssue | null {
+  const powers = PASSTHROUGH_POWERS.filter(([field]) => Boolean(risk[field])).map(([, label]) => label);
+  if (powers.length === 0) {
+    return null;
+  }
+  return {
+    level: "warn",
+    code: "ROUTE_PASSTHROUGH_ISSUER_POWERS",
+    message:
+      `Token ${mint} is only an intermediate hop of this route — you do not keep it. Its issuer holds: ${powers.join(", ")}. ` +
+      "Your consent is not required for it: the transaction can only write to the accounts fixed when you sign, and permanent authorities on your own accounts are compared after simulation.",
+    params: { mint, powers: powers.join(", ") },
+  };
 }
 
 export function associatedTokenAddress(

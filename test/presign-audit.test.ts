@@ -149,6 +149,29 @@ describe("preparePreSignAudit — the full pre-sign pipeline", () => {
     assert.ok(audit.warnings.some((issue) => issue.code === "ISSUER_PERMANENT_DELEGATE"));
   });
 
+  // The same custody powers on a mint the user never keeps must not gate the pair he chose: consent
+  // is about custody, and an intermediate hop is wrapped and unwrapped inside one transaction.
+  test("an intermediate hop with issuer powers informs but never demands consent", async () => {
+    const transaction = buildLegitSwap(actors);
+    const hopMint = PublicKey.default.toBase58();
+    const { audit } = await preparePreSignAudit(baseParams(), deps({
+      order: makeOrder(actors, transaction, { routeMints: [hopMint] }),
+      infos: {
+        [hopMint]: {
+          owner: new PublicKey("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb").toBase58(),
+          data: encodeMint2022({ permanentDelegate: actors.drainDelegate, transferHook: actors.drainDelegate }),
+        },
+      },
+    }));
+    assert.equal(audit.issuerConsentRequired, false);
+    const gated = audit.warnings.filter((issue) => issue.code.startsWith("ISSUER_"));
+    assert.deepEqual(gated.map((issue) => issue.code), []);
+    const note = audit.warnings.find((issue) => issue.code === "ROUTE_PASSTHROUGH_ISSUER_POWERS");
+    assert.ok(note, "the hop must still be disclosed");
+    assert.equal(note?.params?.mint, hopMint);
+    assert.equal(note?.params?.powers, "permanent delegate, transfer hook");
+  });
+
   test("an order that differs from what the user requested is refused (ORDER_MISMATCH)", async () => {
     const transaction = buildLegitSwap(actors);
     const order = { ...makeOrder(actors, transaction), amount: "999999" };
