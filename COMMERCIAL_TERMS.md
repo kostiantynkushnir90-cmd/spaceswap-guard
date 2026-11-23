@@ -1,6 +1,6 @@
-# Commercial terms — using Smart Shield in another swap front-end
+# Commercial terms — using Smart Guard in another swap front-end
 
-This document describes how a third-party swap product can license **Smart Shield** (this guard
+This document describes how a third-party swap product can license **Smart Guard** (this guard
 engine) and what it costs. It is a commercial offer with a measurement method, not a license grant
 and not a technical enforcement.
 

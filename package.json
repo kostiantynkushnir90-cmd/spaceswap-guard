@@ -1,7 +1,7 @@
 {
   "name": "spaceswap-guard",
-  "version": "1.1.0",
-  "description": "SpaceSwap Smart Shield — the pre-sign security rules SpaceSwap runs on every swap, published for independent review with runnable tests.",
+  "version": "1.1.1",
+  "description": "SpaceSwap Smart Guard — the pre-sign security rules SpaceSwap runs on every swap, published for independent review with runnable tests.",
   "license": "MIT",
   "author": "Kostiantyn Kushnir",
   "repository": {

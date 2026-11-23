@@ -1,11 +1,11 @@
-# spaceswap-guard — Smart Shield, in the open
+# spaceswap-guard — Smart Guard, in the open
 
 > *"How will users independently verify these security checks before trusting SpaceSwap with their wallets?"*
 > This repository is our answer. It is the pre-sign security engine of [SpaceSwap](https://spaceswap.pro)
 > — the Solana swap aggregator that never touches your keys — published under MIT with runnable tests.
 
 SpaceSwap is non-custodial: there is nothing to "hand" us. The one moment of real power is your
-signature. Smart Shield is everything that happens before it: the transaction you are about to sign
+signature. Smart Guard is everything that happens before it: the transaction you are about to sign
 is decoded, bounded, simulated and diffed — and any swap that would grant lasting authority over your
 tokens is refused before your wallet is even asked.
 
@@ -65,7 +65,7 @@ repository and production are bugs — please report them.
 
 ## What we will not pretend
 
-See [`THREAT_MODEL.md`](THREAT_MODEL.md) §"What Smart Shield explicitly does NOT do". Short version:
+See [`THREAT_MODEL.md`](THREAT_MODEL.md) §"What Smart Guard explicitly does NOT do". Short version:
 we cannot read arbitrary programs' logic, we cannot verify transfer-hook code, this is not an
 investment-advice oracle, and when a check could not run we tell you instead of guessing.
 
@@ -81,7 +81,7 @@ MIT — see [LICENSE](LICENSE). Use this code in your own products; attribution 
 
 ## If you run a swap product
 
-The code license above is free and stays free. Separately, we will license Smart Shield as the
+The code license above is free and stays free. Separately, we will license Smart Guard as the
 pre-sign engine of your own front-end for **10% of the integrator commission your product
 actually collects** — measured on public chain data, auditable by you down to the signature. Terms,
 arithmetic and the honest limits of that agreement: [`COMMERCIAL_TERMS.md`](COMMERCIAL_TERMS.md).

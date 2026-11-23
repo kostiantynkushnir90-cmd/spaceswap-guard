@@ -1,4 +1,4 @@
-# Smart Shield threat model
+# Smart Guard threat model
 
 What the SpaceSwap guard protects, against whom, and — just as importantly — what it does **not** claim.
 
@@ -28,7 +28,7 @@ the network is your wallet. Everything below protects the signing decision itsel
 | Stale/manipulated price data | Quote age, RFQ expiry, blockhash margin, router allowlist (§2, §3) | Guard refusal / warning |
 | Unverifiable transaction bytes | Unresolved lookup tables are a hard block, not a shrug (§5) | Guard refusal |
 
-## What Smart Shield explicitly does NOT do
+## What Smart Guard explicitly does NOT do
 
 We would rather you learn this here than discover it:
 
@@ -40,7 +40,7 @@ We would rather you learn this here than discover it:
    whether LPs are locked, or whether the mint authority will dump supply. It tells you exactly which
    custody powers exist (§6) so you can decide.
 4. **It cannot prevent losses outside the swap path.** If you sign a malicious transaction in another
-   dApp, paste a poisoned address elsewhere, or fall for phishing, Smart Shield is not in that loop.
+   dApp, paste a poisoned address elsewhere, or fall for phishing, Smart Guard is not in that loop.
    Our bound applies to swaps executed through SpaceSwap.
 5. **State can still change between simulation and execution.** The simulation is a very strong
    filter, not a time machine; the runtime's own checks (min-out floor, blockhash expiry) are the

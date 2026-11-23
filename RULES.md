@@ -1,4 +1,4 @@
-# Smart Shield rulebook — every check, every code
+# Smart Guard rulebook — every check, every code
 
 This is the complete list of guard issues SpaceSwap evaluates on **every swap, before your wallet is
 ever asked to sign**. Each row names the trigger, the verdict level, and the file/function that
